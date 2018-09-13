@@ -1,0 +1,126 @@
+/*Lock un fichier provenant d'un des serveurs*/
+import java.io.*;
+
+boolean lockerFichierFtp(String p_chemin_ftp_complet,
+                         String p_chemin_fichier_sans_nom_fichier,
+                         String p_nom_fichier){
+
+   String fichierSwp = p_chemin_fichier_sans_nom_fichier+"."+p_nom_fichier+".swp";
+   //String nom_fichier_swap = "."+p_nom_fichier+".swp";
+   String nom_fichier_swap = "\\."+p_nom_fichier+"\\.sw.";
+   boolean est_lecture_seule = view.getBuffer().isReadOnly();
+
+   if (est_lecture_seule){
+      return false;
+   }
+   //Macros.message(view, p_chemin_fichier_sans_nom_fichier);
+   //Macros.message(view, p_nom_fichier);
+   if(ftplock.fichier_existe(p_chemin_ftp_complet, p_chemin_fichier_sans_nom_fichier, p_nom_fichier) &&
+      !ftplock.fichier_existe(p_chemin_ftp_complet, p_chemin_fichier_sans_nom_fichier, nom_fichier_swap)){
+      ftplock.stocker_fichier(p_chemin_ftp_complet, fichierSwp);
+      return true;
+   }else{
+      return false;
+   }
+}
+
+   buffers = jEdit.getBuffers();
+
+   for(int i = 0; i < buffers.length; ++i){
+      String chemin_ftp_complet = buffers[i].getPath();
+      if(ftplock.est_fichier_ftp(chemin_ftp_complet)){
+         boolean est_lecture_seule = buffers[i].isReadOnly();
+         boolean est_untitled = buffers[i].isUntitled();
+         if(!est_lecture_seule && !est_untitled){
+            boolean b_etait_en_ro = jEdit.getBooleanProperty("ro_"+chemin_ftp_complet);
+            if(b_etait_en_ro){
+               buffers[i].setReadOnly(true);
+               jEdit.unsetProperty(chemin_ftp_complet);
+               jEdit.unsetProperty("ro_"+chemin_ftp_complet);
+               continue;
+            }else{
+               jEdit.unsetProperty("ro_"+chemin_ftp_complet);
+               ftplock.decouper_chemin_ftp(chemin_ftp_complet);
+               String type_serveur = ftplock.type_serveur();
+               chemin_fichier_avec_nom_fichier = ftplock.chemin_fichier();
+               chemin_fichier_sans_nom_fichier = ftplock.chemin_sans_nom_fichier();
+               nom_fichier = MiscUtilities.getFileName(chemin_fichier_avec_nom_fichier);
+               String droit_fichier = jEdit.getProperty(chemin_ftp_complet);
+
+               //Macros.message(view, "chemin_ftp_complet : "+chemin_ftp_complet);
+               //Macros.message(view, "type_serveur : "+type_serveur);
+               //Macros.message(view, "chemin_fichier_avec_nom_fichier : "+chemin_fichier_avec_nom_fichier);
+               //Macros.message(view, "chemin_fichier_sans_nom_fichier : "+chemin_fichier_sans_nom_fichier);
+               //Macros.message(view, "nom_fichier : "+nom_fichier);
+               //Macros.message(view, "droit_fichier : "+droit_fichier);
+               //Macros.message(view, "est_lecture_seule : "+est_lecture_seule.toString());
+
+               if(type_serveur.equals("ftp")||type_serveur.equals("sftp"))
+               {
+                  if(droit_fichier == null || droit_fichier.length() == 0)
+                  {
+                     if(!est_lecture_seule && !chemin_fichier_sans_nom_fichier.contains("/valid/"))
+                     {
+                        try{
+                           //ftplock.connection_serveur(view, chemin_ftp_complet);
+                        } catch(Exception e) {
+                              //Macros.message(view, e.getMessage());
+                        }
+                        if(!lockerFichierFtp(chemin_ftp_complet,
+                                             chemin_fichier_sans_nom_fichier,
+                                             nom_fichier
+                           ))
+                        {
+                           if(!est_lecture_seule){
+                              buffers[i].setReadOnly(true);
+                              if(buffers[i].isLoaded()/* && !buffers[i].isPerformingIO()*/){
+                                 //VFSManager.waitForRequests();
+                                 //buffers[i].reload(view);
+                                 //VFSManager.waitForRequests();
+                                 //view.repaint();
+                                 //Macros.message(view, "2");
+                              }
+                           }
+                           jEdit.unsetProperty(chemin_ftp_complet);
+                        }
+                        else
+                        {
+                           jEdit.setProperty(chemin_ftp_complet, "rw");
+                        }
+                     }else{
+                        if(!est_lecture_seule){
+                           buffers[i].setReadOnly(true);
+                           if(buffers[i].isLoaded() /*&& !buffers[i].isPerformingIO()*/){
+                              //VFSManager.waitForRequests();
+                              //buffers[i].reload(view);
+                              //VFSManager.waitForRequests();
+                              //view.repaint();
+                              //Macros.message(view, "3");
+                           }
+                        }
+                        jEdit.unsetProperty(chemin_ftp_complet);
+                     }
+                  }else {
+                     if(!droit_fichier.equals("rw")){
+                        if(!est_lecture_seule){
+                           buffers[i].setReadOnly(true);
+                           if(buffers[i].isLoaded()/* && !buffers[i].isPerformingIO()*/){
+                              //VFSManager.waitForRequests();
+                              //buffers[i].reload(view);
+                              //VFSManager.waitForRequests();
+                              //view.repaint();
+                              //Macros.message(view, "4");
+                           }
+                        }
+                        jEdit.unsetProperty(chemin_ftp_complet);
+                     }
+                  }
+               }
+            } //if(b_etait_en_ro)
+         }
+      }
+   }
+
+jEdit.propertiesChanged();
+jEdit.saveSettings();
+System.gc ();
