@@ -41,6 +41,10 @@ boolean lockerFichierFtp(String p_chemin_ftp_complet,
             }else{
                jEdit.unsetProperty("ro_"+chemin_ftp_complet);
                ftplock.decouper_chemin_ftp(chemin_ftp_complet);
+               //On lock pas les fichier sur la VM
+               if(ftplock.serveur().equals("VM")){
+                  return;
+               }
                String type_serveur = ftplock.type_serveur();
                chemin_fichier_avec_nom_fichier = ftplock.chemin_fichier();
                chemin_fichier_sans_nom_fichier = ftplock.chemin_sans_nom_fichier();

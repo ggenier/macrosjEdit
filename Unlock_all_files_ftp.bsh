@@ -34,6 +34,10 @@ try{
          if(ftplock.est_fichier_ftp(chemin_ftp_complet)){
             boolean est_lecture_seule = false;
             ftplock.decouper_chemin_ftp(chemin_ftp_complet);
+            //On lock pas les fichier sur la VM
+            if(ftplock.serveur().equals("VM")){
+               return;
+            }
             String type_serveur = ftplock.type_serveur();
             chemin_fichier_avec_nom_fichier = ftplock.chemin_fichier();
             chemin_fichier_sans_nom_fichier = ftplock.chemin_sans_nom_fichier();
