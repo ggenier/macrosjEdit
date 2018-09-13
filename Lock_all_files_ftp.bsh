@@ -18,8 +18,10 @@ boolean lockerFichierFtp(String p_chemin_ftp_complet,
    if(ftplock.fichier_existe(p_chemin_ftp_complet, p_chemin_fichier_sans_nom_fichier, p_nom_fichier) &&
       !ftplock.fichier_existe(p_chemin_ftp_complet, p_chemin_fichier_sans_nom_fichier, nom_fichier_swap)){
       ftplock.stocker_fichier(p_chemin_ftp_complet, fichierSwp);
+      Log.log(Log.DEBUG,this,"File locked");
       return true;
    }else{
+      Log.log(Log.DEBUG,this,"File unlocked");
       return false;
    }
 }
